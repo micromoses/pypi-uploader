@@ -95,7 +95,11 @@ Tested only on `pypiserver <http://pypi.python.org/pypi/pypiserver>`_.
 Installation
 ============
 
-Go to the root directory with **setup.py** script and install it::
+Install from PyPI::
+
+    $ pip install pypi-uploader
+
+Or go to the root directory with **setup.py** script and install it::
 
     $ python setup.py install
 
