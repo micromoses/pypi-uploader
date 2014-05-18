@@ -3,6 +3,10 @@
 import argparse
 import io
 import sys
+if sys.version_info[0] == 2:
+    StdOutIO = io.BytesIO
+else:
+    StdOutIO = io.StringIO
 
 try:
     from unittest import mock
@@ -134,7 +138,7 @@ class TestCommand(object):
             command='requirements',
             index='internal',
             requirements_file='requirements.txt')
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
 
         command = commands.Command(options, stdout=stdout)
 
@@ -214,18 +218,18 @@ class TestCommand(object):
 
     def test_print(self):
         options = argparse.Namespace()
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
         command = commands.Command(options, stdout=stdout)
 
         command._print('Foo bar\n')
         command._print('baz\n')
 
         stdout.seek(0)
-        assert stdout.read() == b'Foo bar\nbaz\n'
+        assert stdout.read() == 'Foo bar\nbaz\n'
 
     def test_upload_file(self):
         options = argparse.Namespace()
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
         command = commands.Command(options, stdout=stdout)
         uploader = mock.create_autospec(upload.PackageUploader)
 
@@ -233,11 +237,11 @@ class TestCommand(object):
 
         stdout.seek(0)
         assert uploader.upload.call_args == mock.call('mock-1.0.1.tar.gz')
-        assert stdout.read() == b'Uploading mock-1.0.1.tar.gz... success.\n'
+        assert stdout.read() == 'Uploading mock-1.0.1.tar.gz... success.\n'
 
     def test_upload_file_conflict(self):
         options = argparse.Namespace()
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
         command = commands.Command(options, stdout=stdout)
         uploader = mock.create_autospec(upload.PackageUploader)
         uploader.upload.side_effect = exceptions.PackageConflictError('foo')
@@ -247,12 +251,12 @@ class TestCommand(object):
         stdout.seek(0)
         assert uploader.upload.call_args == mock.call('mock-1.0.1.tar.gz')
         assert stdout.read() == (
-            b'Uploading mock-1.0.1.tar.gz... already uploaded.\n'
+            'Uploading mock-1.0.1.tar.gz... already uploaded.\n'
         )
 
     def test_upload_files(self):
         options = argparse.Namespace()
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
         command = commands.Command(options, stdout=stdout)
         uploader = mock.create_autospec(
             upload.PackageUploader,
@@ -276,9 +280,9 @@ class TestCommand(object):
             mock.call('packages/coverage-3.7.1.tar.gz'),
         ]
         assert stdout.read() == (
-            b'Uploading packages to http://localhost:8000\n'
-            b'Uploading packages/mock-1.0.1.tar.gz... already uploaded.\n'
-            b'Uploading packages/coverage-3.7.1.tar.gz... success.\n'
+            'Uploading packages to http://localhost:8000\n'
+            'Uploading packages/mock-1.0.1.tar.gz... already uploaded.\n'
+            'Uploading packages/coverage-3.7.1.tar.gz... success.\n'
         )
 
     @mock.patch.object(commands.Command, '_download', autospec=True)
@@ -369,16 +373,16 @@ class TestMain(object):
             '-u', 'foo',
             '-p', 'bar',
         ]
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
 
         commands.main(argv=argv, stdout=stdout)
 
         stdout.seek(0)
         content = stdout.read()
         assert content == (
-            b'Uploading packages to http://localhost:8000\n'
-            b'Uploading packages/coverage-3.7.1.tar.gz... already uploaded.\n'
-            b'Uploading packages/mock-1.0.1.tar.gz... success.\n'
+            'Uploading packages to http://localhost:8000\n'
+            'Uploading packages/coverage-3.7.1.tar.gz... already uploaded.\n'
+            'Uploading packages/mock-1.0.1.tar.gz... success.\n'
         )
         assert len(upload_mock.call_args_list) == 2
         uploader = upload_mock.call_args[0][0]
@@ -416,16 +420,16 @@ class TestMain(object):
             '-p', 'bar',
             '-d', 'packages',
         ]
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
 
         commands.main(argv=argv, stdout=stdout)
 
         stdout.seek(0)
         content = stdout.read()
         assert content == (
-            b'Uploading packages to http://localhost:8000\n'
-            b'Uploading packages/coverage-3.7.1.tar.gz... already uploaded.\n'
-            b'Uploading packages/mock-1.0.1.tar.gz... success.\n'
+            'Uploading packages to http://localhost:8000\n'
+            'Uploading packages/coverage-3.7.1.tar.gz... already uploaded.\n'
+            'Uploading packages/mock-1.0.1.tar.gz... success.\n'
         )
 
         assert len(download_mock.call_args_list) == 1
@@ -471,16 +475,16 @@ class TestMain(object):
             '-u', 'foo',
             '-p', 'bar',
         ]
-        stdout = io.BytesIO()
+        stdout = StdOutIO()
 
         commands.main(argv=argv, stdout=stdout)
 
         stdout.seek(0)
         content = stdout.read()
         assert content == (
-            b'Uploading packages to http://localhost:8000\n'
-            b'Uploading /tmp/f4Uf/coverage-3.7.1.tar.gz... already uploaded.\n'
-            b'Uploading /tmp/f4Uf/mock-1.0.1.tar.gz... success.\n'
+            'Uploading packages to http://localhost:8000\n'
+            'Uploading /tmp/f4Uf/coverage-3.7.1.tar.gz... already uploaded.\n'
+            'Uploading /tmp/f4Uf/mock-1.0.1.tar.gz... success.\n'
         )
 
         assert len(download_mock.call_args_list) == 1

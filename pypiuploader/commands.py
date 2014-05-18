@@ -121,7 +121,7 @@ class Command(object):
             self._print('success.\n')
 
     def _print(self, message):
-        self.stdout.write(message.encode())
+        self.stdout.write(message)
 
 
 def parse_args(argv):
