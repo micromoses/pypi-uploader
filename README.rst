@@ -2,6 +2,15 @@
 PyPI Uploader
 =============
 
+.. image:: https://secure.travis-ci.org/ignacysokolowski/pypi-uploader.png
+  :target: http://travis-ci.org/ignacysokolowski/pypi-uploader
+
+.. image:: https://pypip.in/v/pypi-uploader/badge.png
+  :target: https://crate.io/packages/pypi-uploader/
+
+.. image:: https://pypip.in/d/pypi-uploader/badge.png
+  :target: https://crate.io/packages/pypi-uploader/
+
 Upload source distributions of your requirements to your PyPI server.
 
 
