@@ -134,6 +134,20 @@ License
 PyPI Uploader is licensed under the :ref:`MIT license <license>`.
 
 
+Changelog
+=========
+
+Version 1.0.0
+-------------
+
+* Added ``--no-use-wheel`` option
+
+Version 0.1.0
+-------------
+
+First release
+
+
 Issues and contributing
 =======================
 
