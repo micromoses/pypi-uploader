@@ -103,7 +103,7 @@ Go to the root directory with **setup.py** script and install it::
 Documentation
 =============
 
-Documentation will be available at https://pypi-uploader.readthedocs.org
+Documentation is available at https://pypi-uploader.readthedocs.org
 
 
 Source
