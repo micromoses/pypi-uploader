@@ -12,6 +12,8 @@ Examples:
     $ pypiupload files packages/mock-1.2.1.tar.gz -i internal
     $ pypiupload requirements requirements.txt \
       -i http://localhost:8000 -u user -p password -d packages_download_dir
+    $ pypiupload requirements requirements.txt \
+      -i http://localhost:8000 --no-use-wheel
 
 """
 
@@ -54,6 +56,8 @@ class Command(object):
     then upload them.  **download_dir** option (``-d`` or ``--download-dir``)
     can specify the directory to which the files will be downloaded.  If not
     given, will create a temporary directory.
+    With **no_use_wheel** option (``--no-use-wheel``), will not find and prefer
+    wheel archives.
 
     **index** option (``-i`` or ``--index-url``) specifies the PyPI host or
     name from the ``~/.pypirc`` config file.
@@ -103,7 +107,8 @@ class Command(object):
         downloader = download.PackageDownloader(self.options.download_dir)
         filenames = downloader.download(
             requirements=getattr(self.options, 'packages', None),
-            requirements_file=getattr(self.options, 'requirements_file', None))
+            requirements_file=getattr(self.options, 'requirements_file', None),
+            no_use_wheel=self.options.no_use_wheel)
         return filenames
 
     def _upload_files(self, uploader, filenames):
@@ -156,6 +161,12 @@ def parse_args(argv):
         'default': None,
         'help': 'Path to directory where the packages should be downloaded',
     }
+    no_use_wheel_kwargs = {
+        'action': 'store_true',
+        'dest': 'no_use_wheel',
+        'default': False,
+        'help': 'Do not find and prefer wheel archives',
+    }
 
     packages_parser = subparsers.add_parser(
         'packages',
@@ -168,6 +179,7 @@ def parse_args(argv):
         help='Package name'
     )
     packages_parser.add_argument(*dir_args, **dir_kwargs)
+    packages_parser.add_argument('--no-use-wheel', **no_use_wheel_kwargs)
     _add_common_arguments(packages_parser)
 
     requirements_parser = subparsers.add_parser(
@@ -180,6 +192,7 @@ def parse_args(argv):
         help='Path to requirements file'
     )
     requirements_parser.add_argument(*dir_args, **dir_kwargs)
+    requirements_parser.add_argument('--no-use-wheel', **no_use_wheel_kwargs)
     _add_common_arguments(requirements_parser)
 
     parser.add_argument(

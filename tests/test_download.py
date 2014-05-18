@@ -71,6 +71,18 @@ class TestPackageDownloader(object):
         with pytest.raises(ValueError):
             downloader._build_args()
 
+    def test_build_args_no_use_wheel(self):
+        downloader = download.PackageDownloader('/foo/bar')
+        args = downloader._build_args(
+            requirements_file='requirements.txt',
+            no_use_wheel=True)
+        assert args == [
+            'install',
+            '-d', '/foo/bar',
+            '--no-use-wheel',
+            '-r', 'requirements.txt',
+        ]
+
     def test_list_download_dir(self):
         download_path = self._mkdtemp()
         __, package1 = tempfile.mkstemp(dir=download_path)
@@ -106,6 +118,23 @@ class TestPackageDownloader(object):
 
         expected_call = mock.call(
             ['install', '-d', download_path, '-r', 'requirements.txt'])
+        assert pip_main_mock.call_args == expected_call
+
+    @mock.patch('pip.main', autospec=True)
+    def test_download_no_use_wheel(self, pip_main_mock):
+        download_path = self._mkdtemp()
+        downloader = download.PackageDownloader(download_path)
+
+        downloader.download(
+            requirements_file='requirements.txt',
+            no_use_wheel=True)
+
+        expected_call = mock.call([
+            'install',
+            '-d', download_path,
+            '--no-use-wheel',
+            '-r', 'requirements.txt',
+        ])
         assert pip_main_mock.call_args == expected_call
 
     def _mkdtemp(self):

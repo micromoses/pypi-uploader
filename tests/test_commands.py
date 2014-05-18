@@ -51,11 +51,21 @@ class TestParseArgs(object):
         assert options.command == 'files'
         assert options.files == ['requests==1.0.1', 'mock']
 
+    def test_files_no_use_wheel(self):
+        argv = [
+            'files', 'requests==1.0.1', 'mock',
+            '-i', 'internal',
+            '--no-use-wheel',
+        ]
+        with pytest.raises(SystemExit):
+            commands.parse_args(argv)
+
     def test_packages(self):
         argv = ['packages', 'requests==1.0.1', 'mock', '-i', 'internal']
         options = commands.parse_args(argv)
         assert options.command == 'packages'
         assert options.packages == ['requests==1.0.1', 'mock']
+        assert not options.no_use_wheel
 
     def test_packages_download_dir(self):
         argv = [
@@ -74,11 +84,18 @@ class TestParseArgs(object):
         assert options.command == 'packages'
         assert options.packages == ['mock']
 
+    def test_packages_no_use_wheel(self):
+        argv = ['packages', 'mock', '-i', 'internal', '--no-use-wheel']
+        options = commands.parse_args(argv)
+        assert options.no_use_wheel
+        assert options.command == 'packages'
+
     def test_requirements(self):
         argv = ['requirements', 'requirements.txt', '-i', 'internal']
         options = commands.parse_args(argv)
         assert options.command == 'requirements'
         assert options.requirements_file == 'requirements.txt'
+        assert not options.no_use_wheel
 
     def test_requirements_download_dir(self):
         argv = [
@@ -99,6 +116,16 @@ class TestParseArgs(object):
         assert options.download_dir == '~/.packages'
         assert options.command == 'requirements'
         assert options.requirements_file == 'requirements.txt'
+
+    def test_requirements_no_use_wheel(self):
+        argv = [
+            'requirements', 'requirements.txt',
+            '-i', 'internal',
+            '--no-use-wheel',
+        ]
+        options = commands.parse_args(argv)
+        assert options.no_use_wheel
+        assert options.command == 'requirements'
 
     def test_username(self):
         argv = ['files', 'mock', '-i', 'internal', '--username', 'foo']
@@ -177,7 +204,8 @@ class TestCommand(object):
         download_mock.return_value = download_return_value
         options = argparse.Namespace(
             download_dir='~/packages',
-            packages=['coverage==3.7.1', 'mock'])
+            packages=['coverage==3.7.1', 'mock'],
+            no_use_wheel=False)
         command = commands.Command(options)
 
         filenames = command._download()
@@ -189,7 +217,8 @@ class TestCommand(object):
         expected_call = mock.call(
             downloader,
             requirements=['coverage==3.7.1', 'mock'],
-            requirements_file=None)
+            requirements_file=None,
+            no_use_wheel=False)
         assert download_mock.call_args == expected_call
 
     @mock.patch.object(download.PackageDownloader, 'download', autospec=True)
@@ -201,7 +230,8 @@ class TestCommand(object):
         download_mock.return_value = download_return_value
         options = argparse.Namespace(
             download_dir='~/packages',
-            requirements_file='requirements.txt')
+            requirements_file='requirements.txt',
+            no_use_wheel=False)
         command = commands.Command(options)
 
         filenames = command._download()
@@ -213,7 +243,27 @@ class TestCommand(object):
         expected_call = mock.call(
             downloader,
             requirements=None,
-            requirements_file='requirements.txt')
+            requirements_file='requirements.txt',
+            no_use_wheel=False)
+        assert download_mock.call_args == expected_call
+
+    @mock.patch.object(download.PackageDownloader, 'download', autospec=True)
+    def test_download_requirements_file_no_use_wheel(self, download_mock):
+        options = argparse.Namespace(
+            requirements_file='requirements.txt',
+            download_dir=None,
+            no_use_wheel=True)
+        command = commands.Command(options)
+
+        command._download()
+
+        assert len(download_mock.call_args_list) == 1
+        downloader = download_mock.call_args[0][0]
+        expected_call = mock.call(
+            downloader,
+            requirements=None,
+            requirements_file='requirements.txt',
+            no_use_wheel=True)
         assert download_mock.call_args == expected_call
 
     def test_print(self):
@@ -438,7 +488,8 @@ class TestMain(object):
         expected_call = mock.call(
             downloader,
             requirements=['coverage==3.7.1', 'mock'],
-            requirements_file=None)
+            requirements_file=None,
+            no_use_wheel=False)
         assert download_mock.call_args == expected_call
 
         assert len(upload_mock.call_args_list) == 2
@@ -493,7 +544,8 @@ class TestMain(object):
         expected_call = mock.call(
             downloader,
             requirements=None,
-            requirements_file='requirements.txt')
+            requirements_file='requirements.txt',
+            no_use_wheel=False)
         assert download_mock.call_args == expected_call
 
         assert len(upload_mock.call_args_list) == 2

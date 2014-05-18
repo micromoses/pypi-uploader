@@ -46,10 +46,15 @@ class PackageDownloader(object):
         #: Path to directory where the packages should be downloaded.
         self.download_path = download_path
 
-    def download(self, requirements=None, requirements_file=None):
+    def download(
+            self,
+            requirements=None,
+            requirements_file=None,
+            no_use_wheel=False):
         """Download the packages using ``pip install`` command.
 
-        One of the arguments must be given, otherwise raise :exc:`ValueError`.
+        Either ``requirements`` or ``requirements_file`` must be given,
+        otherwise raise :exc:`ValueError`.
 
         Return a generator yielding full paths to the downloaded packages.
 
@@ -57,19 +62,28 @@ class PackageDownloader(object):
             Optional list of packages names to download.
         :param requirements_file:
             Optional path to a requirements file.
+        :param no_use_wheel:
+            Do not find and prefer wheel archives, default to ``False``.
+            Corresponds to ``--no-use-wheel`` option from ``pip install``.
 
         """
         self._make_download_dir()
-        args = self._build_args(requirements, requirements_file)
+        args = self._build_args(requirements, requirements_file, no_use_wheel)
         pip.main(args)
         return self._list_download_dir()
 
-    def _build_args(self, requirements=None, requirements_file=None):
+    def _build_args(
+            self,
+            requirements=None,
+            requirements_file=None,
+            no_use_wheel=False):
         args = [
             'install',
             '-d',
             self.download_path,
         ]
+        if no_use_wheel:
+            args.append('--no-use-wheel')
         if requirements is not None:
             args.extend(requirements)
         elif requirements_file is not None:
