@@ -3,6 +3,14 @@
 import argparse
 import io
 import sys
+import pytest
+
+from pypiuploader import commands
+from pypiuploader import download
+from pypiuploader import exceptions
+from pypiuploader import pypirc
+from pypiuploader import upload
+
 if sys.version_info[0] == 2:
     StdOutIO = io.BytesIO
 else:
@@ -12,13 +20,6 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-import pytest
-
-from pypiuploader import commands
-from pypiuploader import download
-from pypiuploader import exceptions
-from pypiuploader import pypirc
-from pypiuploader import upload
 
 
 class TestParseArgs(object):
