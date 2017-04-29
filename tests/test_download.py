@@ -59,12 +59,13 @@ class TestPackageDownloader(object):
     def test_build_args_with_requirements(self):
         downloader = download.PackageDownloader('/foo/bar')
         args = downloader._build_args(requirements=['requests==1.2.1', 'mock'])
-        assert args == ['install', '-d', '/foo/bar', 'requests==1.2.1', 'mock']
+        assert args == ['download', '-d', '/foo/bar',
+                        'requests==1.2.1', 'mock']
 
     def test_build_args_with_requirements_file(self):
         downloader = download.PackageDownloader('/foo/bar')
         args = downloader._build_args(requirements_file='requirements.txt')
-        assert args == ['install', '-d', '/foo/bar', '-r', 'requirements.txt']
+        assert args == ['download', '-d', '/foo/bar', '-r', 'requirements.txt']
 
     def test_build_args_without_arguments(self):
         downloader = download.PackageDownloader('/foo/bar')
@@ -77,9 +78,9 @@ class TestPackageDownloader(object):
             requirements_file='requirements.txt',
             no_use_wheel=True)
         assert args == [
-            'install',
+            'download',
             '-d', '/foo/bar',
-            '--no-use-wheel',
+            '--no-binary', ':all:',
             '-r', 'requirements.txt',
         ]
 
@@ -106,7 +107,7 @@ class TestPackageDownloader(object):
         downloaded = downloader.download(requirements=['mock'])
 
         assert sorted(list(downloaded)) == ['mock-1.0.1.tar.gz']
-        expected_call = mock.call(['install', '-d', download_path, 'mock'])
+        expected_call = mock.call(['download', '-d', download_path, 'mock'])
         assert pip_main_mock.call_args == expected_call
 
     @mock.patch('pip.main', autospec=True)
@@ -117,7 +118,7 @@ class TestPackageDownloader(object):
         downloader.download(requirements_file='requirements.txt')
 
         expected_call = mock.call(
-            ['install', '-d', download_path, '-r', 'requirements.txt'])
+            ['download', '-d', download_path, '-r', 'requirements.txt'])
         assert pip_main_mock.call_args == expected_call
 
     @mock.patch('pip.main', autospec=True)
@@ -130,9 +131,9 @@ class TestPackageDownloader(object):
             no_use_wheel=True)
 
         expected_call = mock.call([
-            'install',
+            'download',
             '-d', download_path,
-            '--no-use-wheel',
+            '--no-binary', ':all:',
             '-r', 'requirements.txt',
         ])
         assert pip_main_mock.call_args == expected_call

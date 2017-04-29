@@ -10,7 +10,7 @@ class PackageDownloader(object):
 
     """Downloads source distributions from PyPI to a directory.
 
-    Runs ``pip install`` command, e.g.::
+    Runs ``pip download`` command, e.g.::
 
         >>> downloader = PackageDownloader('~/.packages')
         >>> downloader.download(['mock', 'requests==1.2.1'])
@@ -19,7 +19,7 @@ class PackageDownloader(object):
 
     .. code-block:: bash
 
-        $ pip install -d ~/.packages mock requests==1.2.1
+        $ pip download -d ~/.packages mock requests==1.2.1
 
     And this:
 
@@ -30,7 +30,7 @@ class PackageDownloader(object):
 
     .. code-block:: bash
 
-        $ pip install -d ~/.packages -r requirements.txt
+        $ pip download -d ~/.packages -r requirements.txt
 
     :param download_path:
         Optional path to directory where the packages should be downloaded,
@@ -51,7 +51,7 @@ class PackageDownloader(object):
             requirements=None,
             requirements_file=None,
             no_use_wheel=False):
-        """Download the packages using ``pip install`` command.
+        """Download the packages using ``pip download`` command.
 
         Either ``requirements`` or ``requirements_file`` must be given,
         otherwise raise :exc:`ValueError`.
@@ -63,8 +63,8 @@ class PackageDownloader(object):
         :param requirements_file:
             Optional path to a requirements file.
         :param no_use_wheel:
-            Do not find and prefer wheel archives, default to ``False``.
-            Corresponds to ``--no-use-wheel`` option from ``pip install``.
+            Do not use wheel archives, default to ``False``.
+            Corresponds to ``--no-binary :all:`` option from ``pip download``.
 
         """
         self._make_download_dir()
@@ -78,12 +78,12 @@ class PackageDownloader(object):
             requirements_file=None,
             no_use_wheel=False):
         args = [
-            'install',
+            'download',
             '-d',
             self.download_path,
         ]
         if no_use_wheel:
-            args.append('--no-use-wheel')
+            args.extend(['--no-binary', ':all:'])
         if requirements is not None:
             args.extend(requirements)
         elif requirements_file is not None:

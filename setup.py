@@ -47,6 +47,7 @@ class PyTest(TestCommand):
 
 install_requires = [
     'requests',
+    'pip>=8',
 ]
 tests_require = [
     'mock',
